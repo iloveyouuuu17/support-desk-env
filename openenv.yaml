@@ -1,0 +1,85 @@
+name: support-desk-env
+version: "1.0.0"
+description: >
+  Customer support ticket triage and response environment for AI agents.
+  Agents must classify, prioritize, route, and respond to realistic support tickets.
+author: "OpenEnv Submission"
+license: "MIT"
+
+server:
+  host: "0.0.0.0"
+  port: 7860
+  entry_point: "app:app"
+
+tasks:
+  - id: ticket-classify
+    name: "Ticket Classification"
+    description: >
+      Classify a single support ticket by category (billing/technical/account/general/spam)
+      and priority (critical/high/medium/low). Score: 0.6 for correct category +
+      0.4 for exact priority (0.2 if within 1 level).
+    difficulty: easy
+    max_steps: 5
+    reward_range: [0.0, 1.0]
+
+  - id: ticket-triage
+    name: "Ticket Triage Queue"
+    description: >
+      Process a queue of 5 mixed support tickets. For each ticket assign a priority
+      and route to the correct department (tier1/tier2/billing/account_mgmt/escalation).
+      Per ticket: 0.4 for priority + 0.6 for department, normalized to 0.2 each.
+    difficulty: medium
+    max_steps: 15
+    reward_range: [0.0, 1.0]
+
+  - id: ticket-respond
+    name: "Ticket Response Drafting"
+    description: >
+      Draft professional responses to 3 complex support tickets using company policy context.
+      Responses are graded on: greeting (0.10), acknowledgment (0.25), solution (0.40),
+      next steps (0.15), closing (0.10), with length penalties. Normalized to 1/3 each.
+    difficulty: hard
+    max_steps: 15
+    reward_range: [0.0, 1.0]
+
+observation_space:
+  type: object
+  description: "Current environment state including ticket list and current ticket ID"
+  properties:
+    task:
+      type: string
+    step:
+      type: integer
+    max_steps:
+      type: integer
+    tickets:
+      type: array
+    current_ticket_id:
+      type: string
+    processed_count:
+      type: integer
+    message:
+      type: string
+    context:
+      type: object
+
+action_space:
+  type: object
+  description: "Action to take on the current ticket"
+  properties:
+    action_type:
+      type: string
+      enum: [classify, triage, respond]
+    ticket_id:
+      type: string
+    category:
+      type: string
+      enum: [billing, technical, account, general, spam]
+    priority:
+      type: string
+      enum: [critical, high, medium, low]
+    department:
+      type: string
+      enum: [tier1, tier2, billing, account_mgmt, escalation]
+    response_text:
+      type: string

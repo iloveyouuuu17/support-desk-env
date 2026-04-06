@@ -83,3 +83,30 @@ action_space:
       enum: [tier1, tier2, billing, account_mgmt, escalation]
     response_text:
       type: string
+
+reward_model:
+  type: partial
+  description: "Agents receive per-step rewards on each action, not just episode end"
+  components:
+    ticket-classify:
+      correct_category: 0.60
+      exact_priority: 0.40
+      priority_within_1_level: 0.20
+    ticket-triage:
+      correct_department: 0.60
+      exact_priority: 0.40
+      per_ticket_normalization: "divide by 5"
+    ticket-respond:
+      greeting: 0.10
+      acknowledgment: 0.25
+      solution: 0.40
+      next_steps: 0.15
+      closing: 0.10
+      per_ticket_normalization: "divide by 3"
+
+baseline_scores:
+  model: "Qwen/Qwen2.5-72B-Instruct"
+  ticket-classify: 0.85
+  ticket-triage: 0.68
+  ticket-respond: 0.62
+  average: 0.72

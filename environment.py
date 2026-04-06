@@ -5,7 +5,7 @@ import copy
 from typing import Any, Dict, List, Optional, Tuple
 
 from graders import grade_classify, grade_response, grade_triage
-from models import Action, Observation, ResetResult, StateResult, StepResult, Ticket
+from models import Action, Observation, Reward, ResetResult, StateResult, StepResult, Ticket
 from tasks import (
     CLASSIFY_ANSWERS,
     CLASSIFY_TICKETS,
@@ -79,6 +79,20 @@ class SupportDeskEnv:
         reward, info = self._dispatch(action)
         self._total_reward = round(self._total_reward + reward, 6)
 
+        # Build structured Reward object
+        breakdown = {}
+        details = info.get("details", {})
+        if isinstance(details, dict):
+            for k, v in details.items():
+                if isinstance(v, (int, float)) and k != "total_score":
+                    breakdown[k] = float(v)
+        reward_info = Reward(
+            value=round(min(max(reward, 0.0), 1.0), 4),
+            breakdown=breakdown,
+            message=info.get("message", ""),
+            is_penalty=info.get("penalty", False),
+        )
+
         # Termination checks
         if not self._pending:
             self._done = True
@@ -90,9 +104,14 @@ class SupportDeskEnv:
         return StepResult(
             observation=self._make_obs(info.get("message", "")),
             reward=round(reward, 4),
+            reward_info=reward_info,
             done=self._done,
             info=info,
         )
+
+    def close(self) -> None:
+        """Release environment resources (no-op for in-memory env)."""
+        pass
 
     def state(self) -> StateResult:
         return StateResult(
@@ -133,7 +152,7 @@ class SupportDeskEnv:
 
     def _do_classify(self, action: Action) -> Tuple[float, Dict[str, Any]]:
         if action.action_type != "classify":
-            return 0.0, {"error": f"expected action_type='classify', got {action.action_type!r}"}
+            return 0.0, {"error": f"expected action_type='classify', got {action.action_type!r}", "penalty": True}
         if not action.ticket_id or not action.category or not action.priority:
             return 0.0, {"error": "classify requires ticket_id, category, and priority"}
         if action.ticket_id not in self._pending:
@@ -152,7 +171,7 @@ class SupportDeskEnv:
 
     def _do_triage(self, action: Action) -> Tuple[float, Dict[str, Any]]:
         if action.action_type != "triage":
-            return 0.0, {"error": f"expected action_type='triage', got {action.action_type!r}"}
+            return 0.0, {"error": f"expected action_type='triage', got {action.action_type!r}", "penalty": True}
         if not action.ticket_id or not action.priority or not action.department:
             return 0.0, {"error": "triage requires ticket_id, priority, and department"}
         if action.ticket_id not in self._pending:
@@ -182,7 +201,7 @@ class SupportDeskEnv:
 
     def _do_respond(self, action: Action) -> Tuple[float, Dict[str, Any]]:
         if action.action_type != "respond":
-            return 0.0, {"error": f"expected action_type='respond', got {action.action_type!r}"}
+            return 0.0, {"error": f"expected action_type='respond', got {action.action_type!r}", "penalty": True}
         if not action.ticket_id or not action.response_text:
             return 0.0, {"error": "respond requires ticket_id and response_text"}
         if action.ticket_id not in self._pending:

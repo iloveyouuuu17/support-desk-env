@@ -34,9 +34,17 @@ class Observation(BaseModel):
     context: Dict[str, Any] = Field(default_factory=dict)
 
 
+class Reward(BaseModel):
+    value: float = Field(..., ge=0.0, le=1.0, description="Scalar reward for this step")
+    breakdown: Dict[str, float] = Field(default_factory=dict, description="Per-component scores")
+    message: str = Field(default="", description="Human-readable reward explanation")
+    is_penalty: bool = Field(default=False, description="Whether this step incurred a penalty")
+
+
 class StepResult(BaseModel):
     observation: Observation
     reward: float
+    reward_info: Optional[Reward] = None
     done: bool
     info: Dict[str, Any] = Field(default_factory=dict)
 

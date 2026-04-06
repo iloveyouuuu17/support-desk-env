@@ -55,8 +55,28 @@ async def root() -> Dict[str, Any]:
         "version": "1.0.0",
         "description": "Customer support ticket triage and response environment",
         "tasks": VALID_TASKS,
-        "endpoints": ["/reset", "/step", "/state", "/health"],
+        "endpoints": ["/reset", "/step", "/state", "/health", "/tasks", "/validate"],
     }
+
+
+@app.get("/tasks")
+async def list_tasks() -> Dict[str, Any]:
+    return {"tasks": [
+        {"id": "ticket-classify", "difficulty": "easy", "max_steps": 5, "description": "Classify 1 ticket by category and priority"},
+        {"id": "ticket-triage", "difficulty": "medium", "max_steps": 15, "description": "Triage 5 tickets with routing decisions"},
+        {"id": "ticket-respond", "difficulty": "hard", "max_steps": 15, "description": "Draft professional responses to 3 tickets"},
+    ]}
+
+
+@app.get("/validate")
+async def validate() -> Dict[str, Any]:
+    """Quick smoke-test of all 3 tasks."""
+    results = {}
+    for task in VALID_TASKS:
+        env = SupportDeskEnv(task=task)
+        r = env.reset()
+        results[task] = {"status": "ok", "tickets": len(r.observation.tickets)}
+    return {"valid": True, "tasks": results}
 
 
 @app.get("/health")

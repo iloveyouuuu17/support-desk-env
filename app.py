@@ -130,6 +130,11 @@ async def state_post(request: StateRequest = StateRequest()) -> Dict[str, Any]:
     return env.state().model_dump()
 
 
-if __name__ == "__main__":
+def main():
+    """Entry point for the server script (used by pyproject.toml [project.scripts])."""
     port = int(os.getenv("PORT", 7860))
     uvicorn.run("app:app", host="0.0.0.0", port=port, reload=False)
+
+
+if __name__ == "__main__":
+    main()

@@ -23,6 +23,7 @@ dependencies = [
     "openai>=1.10.0",
     "httpx>=0.25.0",
     "python-multipart>=0.0.6",
+    "openenv-core>=0.2.0",
 ]
 
 [project.optional-dependencies]
@@ -36,6 +37,7 @@ support-desk-env = "environment:SupportDeskEnv"
 
 [project.scripts]
 support-desk-env = "app:main"
+server = "app:main"
 
 [tool.setuptools]
 py-modules = [

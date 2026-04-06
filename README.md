@@ -1,3 +1,14 @@
+---
+title: SupportDeskEnv
+emoji: 🎫
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+license: mit
+short_description: OpenEnv customer support ticket triage environment
+---
+
 # SupportDeskEnv
 
 A real-world **customer support ticket triage and response** environment for AI agents, built to the [OpenEnv](https://github.com/openenv/openenv) specification.

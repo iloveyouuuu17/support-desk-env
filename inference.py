@@ -297,7 +297,10 @@ def run_task(client: OpenAI, task: str) -> float:
             if done:
                 break
 
-        score = round(min(max(sum(rewards), 0.0), 1.0), 4)
+        raw = sum(rewards)
+        # Scale [0,1] → strictly (0,1): maps 0→0.01, 1→0.99
+        score = round(0.01 + raw * 0.98, 4)
+        score = max(0.001, min(0.999, score))   # hard clamp — never 0.0 or 1.0
         success = score >= SUCCESS_THRESHOLD
 
     except Exception as exc:

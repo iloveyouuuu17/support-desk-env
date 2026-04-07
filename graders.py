@@ -65,8 +65,10 @@ def grade_classify(
     else:
         details["priority"] = f"wrong (expected={pri_correct}, got={pri_given})"
 
-    details["total_score"] = round(score, 4)
-    return round(score, 4), details
+    # Scores must be strictly (0, 1) — scale to [0.01, 0.99]
+    score = round(0.01 + score * 0.98, 4)
+    details["total_score"] = score
+    return score, details
 
 
 def grade_triage(
@@ -108,8 +110,10 @@ def grade_triage(
     else:
         details["department"] = f"wrong (expected={dept_correct}, got={dept_given})"
 
-    details["total_score"] = round(score, 4)
-    return round(score, 4), details
+    # Scores must be strictly (0, 1) — scale to [0.01, 0.99]
+    score = round(0.01 + score * 0.98, 4)
+    details["total_score"] = score
+    return score, details
 
 
 def grade_response(
@@ -155,6 +159,7 @@ def grade_response(
     else:
         details["length_ok"] = f"{length} chars — adequate"
 
-    score = round(min(score, 1.0), 4)
+    # Scores must be strictly (0, 1) — scale to [0.01, 0.99]
+    score = round(0.01 + min(score, 1.0) * 0.98, 4)
     details["total_score"] = score
     return score, details
